@@ -1,14 +1,27 @@
 document.addEventListener("DOMContentLoaded", () => {
+  //event listeners
+  document.addEventListener("keyup", control);
+
+  //query selectors
   const gameGrid = document.querySelector(".grid");
-  const width = 10;
   const scoreDisplay = document.querySelector("#score");
   const startBtn = document.querySelector("#start-btn");
 
+  //variables
+  const width = 10;
+  let currentPosition = 4;
+  let currentRotation = 0;
+
+  //timer for auto-move
+  timerId = setInterval(moveDown, 1000);
+
+  //creates active game area
   for (var i = 0; i < 200; i++) {
     const newDiv = document.createElement("div");
     gameGrid.appendChild(newDiv);
   }
 
+  //creates bottom of game area (barrier where the blocks stop)
   for (var j = 0; j < 10; j++) {
     const takenDiv = document.createElement("div");
     takenDiv.classList.add("taken");
@@ -16,7 +29,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   const squares = Array.from(document.querySelectorAll(".grid div"));
-  console.log(squares);
 
   //Tetris blocks
   const lBlock = [
@@ -56,13 +68,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const tetrisBlockArray = [lBlock, zBlock, tBlock, oBlock, iBlock];
 
-  let currentPosition = 4;
-  let currentRotation = 0;
-
   let random = Math.floor(Math.random() * tetrisBlockArray.length);
   let currentBlock = tetrisBlockArray[random][currentRotation];
-
-  console.log(random);
 
   //draw tetris block
   function drawBlock() {
@@ -78,30 +85,93 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  timerId = setInterval(moveDown, 1000);
+  //control block movement
+  function control(event) {
+    if (event.keyCode === 37) {
+      moveLeft();
+    } else if (event.keyCode === 38) {
+      //rotate
+    } else if (event.keyCode === 39) {
+      moveRight();
+    } else if (event.keyCode === 40) {
+      moveDown();
+    }
+  }
 
   //move the blocks down the grid every second
   function moveDown() {
     eraseBlock();
-    currentPosition += width;
+    currentPosition = currentPosition + width;
     drawBlock();
     freezeBlock();
   }
 
   function freezeBlock() {
-    if (
-      currentBlock.some((index) =>
-        squares[currentPosition + index + width].classList.contains("taken")
-      )
-    ) {
+    //check if the block is at the bottom or will clip into frozen blocks
+    const freezeMovement = currentBlock.some((index) =>
+      squares[currentPosition + index + width].classList.contains("taken")
+    );
+
+    if (freezeMovement) {
       currentBlock.forEach((index) =>
         squares[currentPosition + index].classList.add("taken")
       );
+
       //make a new block
       random = Math.floor(Math.random() * tetrisBlockArray.length);
       currentBlock = tetrisBlockArray[random][currentRotation];
       currentPosition = 4;
       drawBlock();
     }
+  }
+
+  function moveLeft() {
+    eraseBlock();
+
+    //check if the active block is at the left edge of the grid
+    //allow it to move if it is not at the edge
+    const isAtLeftEdge = currentBlock.some(
+      (index) => (currentPosition + index) % width === 0
+    );
+
+    if (!isAtLeftEdge) {
+      currentPosition = currentPosition - 1;
+    }
+
+    //do not allow the active block to clip through frozen blocks
+    if (
+      currentBlock.some((index) =>
+        squares[currentPosition + index].classList.contains("taken")
+      )
+    ) {
+      currentPosition = currentPosition + 1;
+    }
+
+    drawBlock();
+  }
+
+  function moveRight() {
+    eraseBlock();
+
+    //check if the active block is at the right edge of the grid
+    //allow it to move if it is not at the edge
+    const isAtRightEdge = currentBlock.some(
+      (index) => (currentPosition + index) % width === width - 1
+    );
+
+    if (!isAtRightEdge) {
+      currentPosition = currentPosition + 1;
+    }
+
+    //do not allow the active block to clip through frozen blocks
+    if (
+      currentBlock.some((index) =>
+        squares[currentPosition + index].classList.contains("taken")
+      )
+    ) {
+      currentPosition = currentPosition - 1;
+    }
+
+    drawBlock();
   }
 });
