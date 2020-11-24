@@ -9,7 +9,14 @@ document.addEventListener("DOMContentLoaded", () => {
     gameGrid.appendChild(newDiv);
   }
 
+  for (var j = 0; j < 10; j++) {
+    const takenDiv = document.createElement("div");
+    takenDiv.classList.add("taken");
+    gameGrid.append(takenDiv);
+  }
+
   const squares = Array.from(document.querySelectorAll(".grid div"));
+  console.log(squares);
 
   //Tetris blocks
   const lBlock = [
@@ -57,18 +64,44 @@ document.addEventListener("DOMContentLoaded", () => {
 
   console.log(random);
 
-  //draw blocks
-  function draw() {
+  //draw tetris block
+  function drawBlock() {
     currentBlock.forEach((index) => {
       squares[currentPosition + index].classList.add("block");
     });
   }
 
-  draw();
-
-  function erase() {
-    current.forEach((index) => {
+  //erase tetris block
+  function eraseBlock() {
+    currentBlock.forEach((index) => {
       squares[currentPosition + index].classList.remove("block");
     });
+  }
+
+  timerId = setInterval(moveDown, 1000);
+
+  //move the blocks down the grid every second
+  function moveDown() {
+    eraseBlock();
+    currentPosition += width;
+    drawBlock();
+    freezeBlock();
+  }
+
+  function freezeBlock() {
+    if (
+      currentBlock.some((index) =>
+        squares[currentPosition + index + width].classList.contains("taken")
+      )
+    ) {
+      currentBlock.forEach((index) =>
+        squares[currentPosition + index].classList.add("taken")
+      );
+      //make a new block
+      random = Math.floor(Math.random() * tetrisBlockArray.length);
+      currentBlock = tetrisBlockArray[random][currentRotation];
+      currentPosition = 4;
+      drawBlock();
+    }
   }
 });

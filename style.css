@@ -11,6 +11,10 @@
   width: 20px;
 }
 
+.taken {
+  background-color: green;
+}
+
 .block {
   background-color: blue;
 }
