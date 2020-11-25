@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let nextRandom = 0;
 
   //timer for auto-move
-  timerId = setInterval(moveDown, 1000);
+  let timerId;
 
   //creates active game area
   for (var i = 0; i < 200; i++) {
@@ -230,4 +230,16 @@ document.addEventListener("DOMContentLoaded", () => {
       previewSquares[displayIndex + index].classList.add("block");
     });
   }
+
+  startBtn.addEventListener("click", () => {
+    if (timerId) {
+      clearInterval(timerId);
+      timerId = null;
+    } else {
+      drawBlock();
+      timerId = setInterval(moveDown, 1000);
+      nextRandom = Math.floor(Math.random() * tetrisBlockArray.length);
+      displayPreview();
+    }
+  });
 });
