@@ -1,3 +1,7 @@
+.container {
+  display: flex;
+}
+
 .grid {
   width: 200px;
   height: 400px;
@@ -7,6 +11,20 @@
 }
 
 .grid div {
+  height: 20px;
+  width: 20px;
+}
+
+.mini-grid {
+  margin-left: 2rem;
+  width: 80px;
+  height: 80px;
+  display: flex;
+  flex-wrap: wrap;
+  background-color: grey;
+}
+
+.mini-grid div {
   height: 20px;
   width: 20px;
 }

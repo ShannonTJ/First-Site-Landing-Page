@@ -4,12 +4,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
   //query selectors
   const gameGrid = document.querySelector(".grid");
+  const previewGrid = document.querySelector(".mini-grid");
   const scoreDisplay = document.querySelector("#score");
   const startBtn = document.querySelector("#start-btn");
 
   //variables
   const width = 10;
   let currentPosition = 4;
+  let currentRotation = 0;
+
+  const displayWidth = 4;
+  let displayIndex = 0;
+  let nextRandom = 0;
 
   //timer for auto-move
   timerId = setInterval(moveDown, 1000);
@@ -27,7 +33,16 @@ document.addEventListener("DOMContentLoaded", () => {
     gameGrid.append(takenDiv);
   }
 
+  //creates preview grid
+  for (var k = 0; k < 16; k++) {
+    const newDiv = document.createElement("div");
+    previewGrid.appendChild(newDiv);
+  }
+
   const squares = Array.from(document.querySelectorAll(".grid div"));
+  const previewSquares = Array.from(
+    document.querySelectorAll(".mini-grid div")
+  );
 
   //create tetris block arrays
   const lBlock = [
@@ -65,11 +80,26 @@ document.addEventListener("DOMContentLoaded", () => {
     [0, width, width + 1, width * 2 + 1],
   ];
 
-  const tetrisBlockArray = [lBlock, zBlock, tBlock, oBlock, iBlock];
+  //preview array
+  const nextBlockArray = [
+    [1, displayWidth + 1, displayWidth * 2 + 1, 2],
+    [0, displayWidth, displayWidth + 1, 1],
+    [displayWidth + 1, displayWidth * 2 + 1, displayWidth * 3 + 1, 1],
+    [displayWidth, displayWidth + 1, 1, displayWidth + 2],
+    [
+      displayWidth * 2,
+      displayWidth * 2 + 1,
+      displayWidth + 1,
+      displayWidth + 2,
+    ],
+  ];
 
-  let currentRotation = 0;
+  const tetrisBlockArray = [lBlock, oBlock, iBlock, tBlock, zBlock];
+
   let random = Math.floor(Math.random() * tetrisBlockArray.length);
   let currentBlock = tetrisBlockArray[random][currentRotation];
+
+  console.log("random outside function" + random);
 
   //draw tetris block
   function drawBlock() {
@@ -118,10 +148,17 @@ document.addEventListener("DOMContentLoaded", () => {
       );
 
       //make a new block
-      random = Math.floor(Math.random() * tetrisBlockArray.length);
+      random = nextRandom;
+      nextRandom = Math.floor(Math.random() * tetrisBlockArray.length);
+
+      console.log("------");
+      console.log("random" + random);
+      console.log("nextRandom" + nextRandom);
+
       currentBlock = tetrisBlockArray[random][currentRotation];
       currentPosition = 4;
       drawBlock();
+      displayPreview();
     }
   }
 
@@ -180,5 +217,17 @@ document.addEventListener("DOMContentLoaded", () => {
     currentRotation = (currentRotation + 1) % 4;
     currentBlock = tetrisBlockArray[random][currentRotation];
     drawBlock();
+  }
+
+  function displayPreview() {
+    //erase the previous block
+    previewSquares.forEach((square) => {
+      square.classList.remove("block");
+    });
+
+    //display the new block
+    nextBlockArray[nextRandom].forEach((index) => {
+      previewSquares[displayIndex + index].classList.add("block");
+    });
   }
 });
