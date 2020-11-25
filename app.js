@@ -10,7 +10,6 @@ document.addEventListener("DOMContentLoaded", () => {
   //variables
   const width = 10;
   let currentPosition = 4;
-  let currentRotation = 0;
 
   //timer for auto-move
   timerId = setInterval(moveDown, 1000);
@@ -30,7 +29,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const squares = Array.from(document.querySelectorAll(".grid div"));
 
-  //Tetris blocks
+  //create tetris block arrays
   const lBlock = [
     [1, width + 1, width * 2 + 1, 2],
     [width, width + 1, width + 2, width * 2 + 2],
@@ -49,7 +48,7 @@ document.addEventListener("DOMContentLoaded", () => {
     [width + 1, width * 2 + 1, width * 3 + 1, 1],
     [width, width + 1, width + 2, width + 3],
     [width + 1, width * 2 + 1, width * 3 + 1, 1],
-    [[width, width + 1, width + 2, width + 3]],
+    [width, width + 1, width + 2, width + 3],
   ];
 
   const tBlock = [
@@ -68,6 +67,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const tetrisBlockArray = [lBlock, zBlock, tBlock, oBlock, iBlock];
 
+  let currentRotation = 0;
   let random = Math.floor(Math.random() * tetrisBlockArray.length);
   let currentBlock = tetrisBlockArray[random][currentRotation];
 
@@ -90,7 +90,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (event.keyCode === 37) {
       moveLeft();
     } else if (event.keyCode === 38) {
-      //rotate
+      rotate();
     } else if (event.keyCode === 39) {
       moveRight();
     } else if (event.keyCode === 40) {
@@ -172,6 +172,13 @@ document.addEventListener("DOMContentLoaded", () => {
       currentPosition = currentPosition - 1;
     }
 
+    drawBlock();
+  }
+
+  function rotate() {
+    eraseBlock();
+    currentRotation = (currentRotation + 1) % 4;
+    currentBlock = tetrisBlockArray[random][currentRotation];
     drawBlock();
   }
 });
