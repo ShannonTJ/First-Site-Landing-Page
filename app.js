@@ -89,6 +89,25 @@ function drawMatrix(matrix, offset) {
   });
 }
 
+function gridSweep() {
+  let rowCount = 1;
+  outer: for (let y = grid.length - 1; y > 0; --y) {
+    for (let x = 0; x < grid[y].length; ++x) {
+      if (grid[y][x] === 0) {
+        continue outer;
+      }
+    }
+    //get an empty row
+    const row = grid.splice(y, 1)[0].fill(0);
+    //put the empty row on the top of the grid
+    grid.unshift(row);
+    ++y;
+
+    player.score += rowCount * 10;
+    rowCount = rowCount * 2;
+  }
+}
+
 function merge(grid, player) {
   player.matrix.forEach((row, y) => {
     row.forEach((value, x) => {
@@ -106,6 +125,8 @@ function playerDrop() {
     player.position.y--;
     merge(grid, player);
     playerReset();
+    gridSweep();
+    updateScore();
   }
   dropCounter = 0;
 }
@@ -129,6 +150,8 @@ function playerReset() {
   //end the game and clear the grid
   if (collide(grid, player)) {
     grid.forEach((row) => row.fill(0));
+    player.score = 0;
+    updateScore();
   }
 }
 
@@ -185,6 +208,10 @@ function update(time = 0) {
   requestAnimationFrame(update);
 }
 
+function updateScore() {
+  document.getElementById("score").innerText = player.score;
+}
+
 const colors = [
   null,
   "#ff0d72",
@@ -199,8 +226,9 @@ const colors = [
 const grid = createMatrix(12, 20);
 
 const player = {
-  position: { x: 5, y: 5 },
-  matrix: createPiece("T"),
+  position: { x: 0, y: 0 },
+  matrix: null,
+  score: 0,
 };
 
 document.addEventListener("keydown", (event) => {
@@ -217,4 +245,6 @@ document.addEventListener("keydown", (event) => {
   }
 });
 
+playerReset();
+updateScore();
 update();
