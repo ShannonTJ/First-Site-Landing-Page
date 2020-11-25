@@ -3,10 +3,35 @@ const context = canvas.getContext("2d");
 
 context.scale(20, 20);
 
+//in milliseconds
+let dropCounter = 0;
+let dropInterval = 1000;
+let lastTime = 0;
+
+const colors = [
+  null,
+  "#ff0d72",
+  "#0dc2ff",
+  "#0dff72",
+  "#f538ff",
+  "#ff8e0d",
+  "#ffe138",
+  "#3877ff",
+];
+
+const grid = createMatrix(12, 20);
+
+const player = {
+  position: { x: 0, y: 0 },
+  matrix: null,
+  score: 0,
+};
+
 function collide(grid, player) {
   const [m, o] = [player.matrix, player.position];
   for (let y = 0; y < m.length; ++y) {
     for (let x = 0; x < m[y].length; ++x) {
+      //check row by row
       if (m[y][x] !== 0 && (grid[y + o.y] && grid[y + o.y][x + o.x]) !== 0) {
         return true;
       }
@@ -16,6 +41,8 @@ function collide(grid, player) {
 }
 
 function createMatrix(width, height) {
+  //create matrix array
+  //all values in the arry will be 0 (empty grid to start)
   const matrix = [];
   while (height > 0) {
     matrix.push(new Array(width).fill(0));
@@ -24,6 +51,8 @@ function createMatrix(width, height) {
   return matrix;
 }
 
+//Create all tetris blocks and store in matrices
+//the numbers represent different block colors
 function createPiece(type) {
   if (type === "T") {
     return [
@@ -71,14 +100,19 @@ function createPiece(type) {
 }
 
 function draw() {
+  //draw the black grid area
   context.fillStyle = "#000";
   context.fillRect(0, 0, canvas.clientWidth, canvas.clientHeight);
 
+  //draw the inactive blocks
   drawMatrix(grid, { x: 0, y: 0 });
+  //draw the active block
   drawMatrix(player.matrix, player.position);
 }
 
 function drawMatrix(matrix, offset) {
+  //draw the inactive blocks
+  //color them based on the colors array
   matrix.forEach((row, y) => {
     row.forEach((value, x) => {
       if (value) {
@@ -90,9 +124,12 @@ function drawMatrix(matrix, offset) {
 }
 
 function gridSweep() {
+  //check for cleared rows in the game
   let rowCount = 1;
   outer: for (let y = grid.length - 1; y > 0; --y) {
     for (let x = 0; x < grid[y].length; ++x) {
+      //if any empty blocks are found in the row
+      //move on to the next row
       if (grid[y][x] === 0) {
         continue outer;
       }
@@ -103,12 +140,16 @@ function gridSweep() {
     grid.unshift(row);
     ++y;
 
+    //update the score
+    //calculate points depending on how many rows were cleared
     player.score += rowCount * 10;
     rowCount = rowCount * 2;
   }
 }
 
 function merge(grid, player) {
+  //merge the active block with the inactive blocks
+  //update the grid array to contain the new block, represented by nonzero values
   player.matrix.forEach((row, y) => {
     row.forEach((value, x) => {
       if (value !== 0) {
@@ -119,8 +160,14 @@ function merge(grid, player) {
 }
 
 function playerDrop() {
+  //moves the active block down
   player.position.y++;
 
+  //when the active block reaches the bottom/inactive blocks:
+  //move the block back up, to its uncollided position
+  //merge the block with the inactive blocks
+  //generate a new block
+  //check if a row was cleared and update the score
   if (collide(grid, player)) {
     player.position.y--;
     merge(grid, player);
@@ -128,10 +175,12 @@ function playerDrop() {
     gridSweep();
     updateScore();
   }
+  //reset counter
   dropCounter = 0;
 }
 
 function playerMove(direction) {
+  //move the active block from left to right
   player.position.x = player.position.x + direction;
 
   if (collide(grid, player)) {
@@ -140,11 +189,16 @@ function playerMove(direction) {
 }
 
 function playerReset() {
+  //create a new block
+  //choose a random shape
   const pieces = "ILJOTSZ";
-  player.matrix = createPiece(pieces[(pieces.length * Math.random()) | 0]);
+  player.matrix = createPiece(
+    pieces[Math.floor(pieces.length * Math.random())]
+  );
+  //initialize new block position
   player.position.y = 0;
   player.position.x =
-    ((grid[0].length / 2) | 0) - ((player.matrix[0].length / 2) | 0);
+    Math.floor(grid[0].length / 2) - Math.floor(player.matrix[0].length / 2);
 
   //if there is a collision directly after generating a new piece,
   //end the game and clear the grid
@@ -161,6 +215,7 @@ function playerRotate(direction) {
   rotate(player.matrix, direction);
 
   //check for collisions of rotating pieces
+  //if the piece clips into something, change the offset so the piece is moved back to its old position
   while (collide(grid, player)) {
     player.position.x = player.position.x + offset;
     offset = -(offset + (offset > 0 ? 1 : -1));
@@ -188,11 +243,6 @@ function rotate(matrix, direction) {
   }
 }
 
-//in milliseconds
-let dropCounter = 0;
-let dropInterval = 1000;
-let lastTime = 0;
-
 function update(time = 0) {
   const deltaTime = time - lastTime;
   lastTime = time;
@@ -212,25 +262,6 @@ function updateScore() {
   document.getElementById("score").innerText = player.score;
 }
 
-const colors = [
-  null,
-  "#ff0d72",
-  "#0dc2ff",
-  "#0dff72",
-  "#f538ff",
-  "#ff8e0d",
-  "#ffe138",
-  "#3877ff",
-];
-
-const grid = createMatrix(12, 20);
-
-const player = {
-  position: { x: 0, y: 0 },
-  matrix: null,
-  score: 0,
-};
-
 document.addEventListener("keydown", (event) => {
   if (event.keyCode === 37) {
     playerMove(-1);
@@ -245,6 +276,7 @@ document.addEventListener("keydown", (event) => {
   }
 });
 
+//call functions
 playerReset();
 updateScore();
 update();
