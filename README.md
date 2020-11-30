@@ -1,5 +1,5 @@
 # javascript-tetris
-https://shan-tetris.netlify.app/
+https://shan-javascript-tetris.netlify.app/
 
 CONTROLS:
 
